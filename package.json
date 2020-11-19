@@ -1,0 +1,33 @@
+{
+    "name": "webpack-template",
+    "version": "1.0.0",
+    "description": "",
+    "private": true,
+    "scripts": {
+        "build": "webpack"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Arvinzwt/webpack-template.git"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/Arvinzwt/webpack-template/issues"
+    },
+    "homepage": "https://github.com/Arvinzwt/webpack-template#readme",
+    "devDependencies": {
+        "css-loader": "^5.0.1",
+        "csv-loader": "^3.0.3",
+        "file-loader": "^6.2.0",
+        "html-webpack-plugin": "^4.5.0",
+        "style-loader": "^2.0.0",
+        "webpack": "^5.5.1",
+        "webpack-cli": "^4.2.0",
+        "xml-loader": "^1.2.1"
+    },
+    "dependencies": {
+        "lodash": "^4.17.20"
+    }
+}
