@@ -2,37 +2,27 @@
     "name": "webpack-template",
     "version": "1.0.0",
     "description": "",
-    "private": true,
+    "main": "webpack.config.js",
     "scripts": {
-        "build": "webpack",
+        "build": "npx webpack",
         "watch": "webpack --watch",
-        "server": "node server.js"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/Arvinzwt/webpack-template.git"
+        "start": "webpack-dev-server --open"
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
-    "bugs": {
-        "url": "https://github.com/Arvinzwt/webpack-template/issues"
-    },
-    "homepage": "https://github.com/Arvinzwt/webpack-template#readme",
     "devDependencies": {
-        "clean-webpack-plugin": "^3.0.0",
-        "css-loader": "^5.0.1",
-        "csv-loader": "^3.0.3",
-        "express": "^4.17.1",
-        "file-loader": "^6.2.0",
-        "html-webpack-plugin": "^4.5.0",
-        "style-loader": "^2.0.0",
-        "webpack": "^5.5.1",
-        "webpack-cli": "^4.2.0",
-        "webpack-dev-middleware": "^4.0.2",
+        "clean-webpack-plugin": "^0.1.17",
+        "css-loader": "^0.28.4",
+        "csv-loader": "^2.1.1",
+        "express": "^4.15.3",
+        "file-loader": "^0.11.2",
+        "html-webpack-plugin": "^2.29.0",
+        "style-loader": "^0.18.2",
+        "webpack": "^3.0.0",
+        "webpack-dev-middleware": "^1.12.0",
+        "webpack-dev-server": "^2.9.1",
+        "webpack-merge": "^4.1.0",
         "xml-loader": "^1.2.1"
-    },
-    "dependencies": {
-        "lodash": "^4.17.20"
     }
 }
