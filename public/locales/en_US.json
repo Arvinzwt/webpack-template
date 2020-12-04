@@ -1,0 +1,7 @@
+{
+    "splash": "/assets/en_US_splash.png",
+    "logo": "/assets/en_US_react.png",
+    "home": "Home",
+    "about": "About",
+    "message": "hello i18n !!"
+}
