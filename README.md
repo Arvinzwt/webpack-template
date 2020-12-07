@@ -1,4 +1,4 @@
-# vip-classroom
+# my-project
 
 ## Project setup
 ```
