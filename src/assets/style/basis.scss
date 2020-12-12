@@ -244,19 +244,20 @@ $jr-shadow-basic: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .04);
 //滚动条样式
 @mixin scroll-style{
     /*修改滚动条样式-滚动条整体部分*/
-    ::-webkit-scrollbar {width: 6px;height: 6px;background: transparent;}
+    ::-webkit-scrollbar {width: 5px;height: 5px;background: transparent;}
 
     //滚动条的轨道
-    ::-webkit-scrollbar-track {background: #fafafa;box-shadow: none;}
+    ::-webkit-scrollbar-track {background: transparent;box-shadow: none;}
 
     //内层轨道，滚动条中间部分
     ::-webkit-scrollbar-track-piece {}
 
     //滚动条里面的小方块
-    ::-webkit-scrollbar-thumb {background-color: #eaedf1;box-shadow: none;-webkit-border-radius: 8px;border-radius: 8px;}
+    ::-webkit-scrollbar-thumb:horizontal {background-color: rgba(125, 125, 125, 0.7);box-shadow: none;-webkit-border-radius: 6px;border-radius: 6px;}
+    ::-webkit-scrollbar-thumb:vertical {background-color: rgba(125, 125, 125, 0.7);box-shadow: none;-webkit-border-radius: 6px;border-radius: 6px;}
 
     //滚动条里面的小方块-划过
-    ::-webkit-scrollbar-thumb:hover {background-color: #e2e5e9;}
+    ::-webkit-scrollbar-thumb:hover {background-color: rgba(125, 125, 125, 1);}
 
     //边角，即两个滚动条的交汇处
     ::-webkit-scrollbar-corner {background-color: transparent;}
@@ -272,5 +273,5 @@ $jr-shadow-basic: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .04);
 a {color: $jr-brand-color;text-decoration: none;-webkit-backface-visibility: hidden;}
 
 /*字体图标*/
-@import url("//at.alicdn.com/t/font_2248253_fb4tst7gvu7.css");
+@import url("//at.alicdn.com/t/font_2248253_av1lq4eat0a.css");
 .iconfont {display: inline-flex;justify-content: center;align-items: center;font-size: inherit;}

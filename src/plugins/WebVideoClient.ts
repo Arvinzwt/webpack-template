@@ -6,15 +6,17 @@ console.log('设备检测', AgoraRTC.VERSION, AgoraRTC.checkSystemRequirements()
  * 本地视频
  *******************************************************************/
 class VideoStream extends BaseEvent {
+    element: any = ""
     cameras = []; //视频输入列表
     microphones = []; //音频输入列表
     audios = []; //音频输出列表
-    camera = null; //当前使用的视频输入设备
+    camera:any = null; //当前使用的视频输入设备
     microphone = null; //当前使用的音频输入设备
-    localStream = null; //本地视频流
-    videoProfile = null; //视频规格
-    videoElement = null; //本地流video播放容器
-    streamID = null;
+    localStream:any = null; //本地视频流
+    videoProfile:any = null; //视频规格
+    videoElement:any  = null; //本地流video播放容器
+    streamID:any;
+    access: boolean = false;
     constructor() {
         super();
     }
@@ -23,11 +25,14 @@ class VideoStream extends BaseEvent {
      * 获取视频采集约束数据
      */
     get options() {
+        let that = this;
         var data = {
             streamID: parseInt(that.streamID || Math.round(Math.random() * 10000)),
             screen: false,
             video: false,
             audio: false,
+            cameraId: '',
+            microphoneId: '',
         };
         if (this.cameraId) {
             data.video = true;
@@ -60,19 +65,27 @@ class VideoStream extends BaseEvent {
                 this.microphones = [];
                 if (devices && devices.length > 0) {
                     devices.forEach((device) => {
-                        device = JSON.parse(JSON.stringify(device));
+                        devices = JSON.parse(JSON.stringify(device));
                         if (device['kind'] == 'videoinput') {
-                            device.label = device.label || 'Camera ' + (this.cameras.length + 1);
-                            this.cameras.push(device);
+                            // @ts-ignore
+                            devices.label = device.label || 'Camera ' + (this.cameras.length + 1);
+                            // @ts-ignore
+                            this.cameras.push(devices);
                         } else if (device['kind'] == 'audioinput') {
-                            device.label = device.label || 'Microphone ' + (this.microphones.length + 1);
-                            this.microphones.push(device);
+                            // @ts-ignore
+                            devices.label = device.label || 'Microphone ' + (this.microphones.length + 1);
+                            // @ts-ignore
+                            this.microphones.push(devices);
                         } else if (device['kind'] == 'audiooutput') {
-                            device.label = device.label || 'Audio ' + (this.audios.length + 1);
-                            this.audios.push(device);
+                            // @ts-ignore
+                            devices.label = device.label || 'Audio ' + (this.audios.length + 1);
+                            // @ts-ignore
+                            this.audios.push(devices);
                         }
-                        delete device['groupId'];
-                        delete device['kind'];
+                        // @ts-ignore
+                        delete devices['groupId'];
+                        // @ts-ignore
+                        delete devices['kind'];
                     });
                     resolve([this.cameras, this.microphones, this.audios]);
                 } else {
@@ -84,7 +97,7 @@ class VideoStream extends BaseEvent {
 
     set cameraId(deviceId) {
         const list = this.cameras || [];
-        list.forEach(element => {
+        list.forEach((element: any) => {
             if (element.deviceId == deviceId) {
                 this.camera = element;
             }
@@ -96,6 +109,7 @@ class VideoStream extends BaseEvent {
             return this.camera.deviceId;
         }
         if (this.cameras.length > 0) {
+            // @ts-ignore
             return this.cameras[0].deviceId;
         }
         return null;
@@ -104,6 +118,7 @@ class VideoStream extends BaseEvent {
     set microphoneId(deviceId) {
         const list = this.microphones || [];
         list.forEach(element => {
+            // @ts-ignore
             if (element.deviceId == deviceId) {
                 this.microphone = element;
             }
@@ -112,9 +127,11 @@ class VideoStream extends BaseEvent {
 
     get microphoneId() {
         if (this.microphone) {
+            // @ts-ignore
             return this.microphone.deviceId;
         }
         if (this.microphones.length > 0) {
+            // @ts-ignore
             return this.microphones[0].deviceId;
         }
         return null;
@@ -124,13 +141,13 @@ class VideoStream extends BaseEvent {
      * 显示播放本地视频流
      * vue项目推荐使用 :srcObject.prop="stream" 
      *  */
-    display(videoElement) {
+    display(videoElement: any) {
         const video = videoElement || this.videoElement;
         if (this.localStream) {
             this.localStream.isPlaying() && this.localStream.stop();
             video.autoplay = true;
             video.srcObject = this.localStream.stream;
-            video.play().catch(err => {
+            video.play().catch((err:any) => {
                 console.warn('localStream 播放视频流失败', err);
             });
 
@@ -138,7 +155,7 @@ class VideoStream extends BaseEvent {
         }
     }
 
-    createStream(options) {
+    createStream(options:any) {
         options = options || this.options;
         this.videoProfile = this.videoProfile || '240P_3';
         console.log('Create Stream', this.element, this.videoProfile, options);
@@ -156,14 +173,14 @@ class VideoStream extends BaseEvent {
             this.localStream.init(() => {
                 console.log("getUserMedia successfully");
                 resolve(this.localStream);
-            }, (err) => {
+            }, (err:any) => {
                 console.log("getUserMedia failed", err);
                 reject(err.msg);
             });
         });
     }
 
-    switchDevice(type, deviceId) {
+    switchDevice(type:any, deviceId:any) {
         return new Promise((resolve, reject) => {
             this.localStream.switchDevice(type, deviceId, resolve, reject);
         });
@@ -182,53 +199,69 @@ class VideoStream extends BaseEvent {
  *******************************************************************/
 class VideoClient extends BaseEvent {
     token = null;
-    channel = null;
-    streamList = {};
-    clinet = null;
-    appid = null;
+    channel:any = null;
+    streamList:any = {};
+    client:any = null;
+    appid:any = null;
     constructor() {
         super();
+        // @ts-ignore
         AgoraRTC.Logger.setLogLevel(AgoraRTC.Logger.INFO);
         AgoraRTC.Logger.enableLogUpload();
         AgoraRTC.getSupportedCodec().then(function(result) {
             console.log(`Supported video codec: ${result.video.join(", ")}`);
             console.log(`Supported audio codec: ${result.audio.join(", ")}`);
         });
+        // @ts-ignore
         this.client = AgoraRTC.createClient({ mode: 'live' });
         this.client.enableAudioVolumeIndicator = false; //禁用说话者音量提示
-        this.addListener(this.client);
+        this.addEventListener(this.client);
     }
 
     /**
      * 监听视频流对象
      * @param {Object} client 
      */
-    addListener(client) {
+    addEventListener(client:any):void {
         const that = this;
         //远程音视频流已添加回调事件(stream-added)
-        client.on('stream-added', (evt) => {
+        client.on('stream-added', (evt:any) => {
             const stream = evt.stream;
             const uid = stream.getId();
-            console.log("New stream added: ", uid);
+            console.warn("New stream added: ", uid);
             console.log("Subscribe ", stream);
-            client.subscribe(stream, function(err) {
-                console.log("Subscribe stream failed", uid, err);
+            client.subscribe(stream, function(err:any) {
+            console.log("Subscribe stream failed", uid, err);
             });
         });
         //远程音视频流已订阅回调事件(stream-subscribed)
-        client.on('stream-subscribed', (evt) => {
+        client.on('stream-subscribed', (evt:any) => {
             const stream = evt.stream;
             const uid = stream.getId();
             that.streamList[uid] = stream;
             console.log("Subscribe remote stream successfully: ", stream.getId(), stream.hasVideo(), stream.hasAudio(), stream.getAttributes());
-            var data = that.getToken(uid);
-            that.emit('stream', data.id, data.type, data.token);
+            var user:any = that.getToken(uid);
+            that.emit('stream', user.id, user.type, user.token);
+            
+            stream.getStats((data:any) => {
+                var apl = data.audioReceivePacketsLost / (data.audioReceivePackets - data.audioReceivePacketsLost);
+                var vpl = data.videoReceivePacketsLost / (data.videoReceivePackets - data.videoReceivePacketsLost);
+                // that.emit('lostlevel', user, {
+                //     value: (apl * 100).toFixed(3),
+                //     // @ts-ignore
+                //     level: AgoraRTC.netWorkLostLevel(apl)
+                // }, {
+                //     value: (vpl * 100).toFixed(3),
+                //     // @ts-ignore
+                //     level: AgoraRTC.netWorkLostLevel(vpl)
+                // });
+            })
         });
         //远程音视频流已删除回调事件(stream-removed)
-        client.on('stream-removed', (evt) => {
+        client.on('stream-removed', (evt:any) => {
             const stream = evt.stream;
             const uid = stream.getId();
-            const data = that.getToken(uid);
+            const data:any = that.getToken(uid);
             that.emit('removed', data.id, data.type, data.token);
             stream.stop();
             delete that.streamList[uid];
@@ -236,11 +269,11 @@ class VideoClient extends BaseEvent {
         });
 
         //对方用户已离开会议室回调事件(peer-leave)
-        client.on('peer-leave', (evt) => {
+        client.on('peer-leave', (evt:any) => {
             const stream = evt.stream;
             if (stream) {
                 const uid = evt.uid;
-                const data = that.getToken(uid);
+                const data:any = that.getToken(uid);
                 that.emit('removed', data.id, data.type, data.token);
                 stream.stop();
                 delete that.streamList[uid];
@@ -249,21 +282,21 @@ class VideoClient extends BaseEvent {
         });
 
         //用户已取消视频通话静音
-        client.on('unmute-video', (evt) => {
+        client.on('unmute-video', (evt:any) => {
             const uid = evt.uid;
             const data = that.getToken(uid);
             console.log("unmute video:", uid, data);
         });
 
         //用户已被踢且被封禁
-        client.on('client-banned', (evt) => {
+        client.on('client-banned', (evt:any) => {
             const uid = evt.uid;
             const attr = evt.attr;
             that.emit('rejected', uid, attr);
             console.warn(" user banned:" + uid + ", banntype:" + attr);
         });
 
-        client.on('active-speaker', (evt) => {
+        client.on('active-speaker', (evt:any) => {
             const uid = evt.uid;
             const data = that.getToken(uid);
             console.log("update active speaker: client", uid, data);
@@ -275,16 +308,28 @@ class VideoClient extends BaseEvent {
         });
 
         var channelKey = "";
-        client.on('error', function(err) {
+        client.on('error', function(err:any) {
             console.log("Got error msg:", err.reason);
             that.emit('error', err.reason);
             if (err.reason === 'DYNAMIC_KEY_TIMEOUT') {
                 client.renewChannelKey(channelKey, function() {
                     console.log("Renew channel key successfully");
-                }, function(err) {
+                }, function(err:any) {
                     console.warn("Renew channel key failed: ", err);
                 });
             }
+        });
+
+        //摄像头被添加或移除
+        client.on("camera-changed", function (evt: { state: any; device: any; }) {
+            console.log("Camera Changed", evt.state, evt.device);
+        });
+
+        //报告本地用户的上下行网络质量
+        client.on("network-quality", function (stats:any) {
+            // console.warn("downlinkNetworkQuality", stats.downlinkNetworkQuality);
+            // console.log("uplinkNetworkQuality", stats.uplinkNetworkQuality);
+            that.emit('network', stats.uplinkNetworkQuality, stats.downlinkNetworkQuality);
         });
     }
 
@@ -292,10 +337,12 @@ class VideoClient extends BaseEvent {
      * 解析token，获取解析token结果对象
      * @param {String} token 
      */
-    getToken(token) {
+    getToken(token: any) {
         token = token + "";
         var result = {
-            token: token
+            token: token,
+            type: 0,
+            id: 0,
         };
         if (token && token.length >= 2) {
             result = {
@@ -310,16 +357,17 @@ class VideoClient extends BaseEvent {
     }
 
     //更新App token
-    renewToken(appToken) {
+    renewToken(appToken:any) {
         this.client.renewToken(appToken);
     }
 
     /**
      * 初始化
      */
-    init(appid) {
+    init(appid: string) {
+        let that = this;
         this.appid = appid;
-        console.log("AgoraRTC.BUILD", AgoraRTC.BUILD, "VIDEO CLIENT::", appid);
+        // console.log("AgoraRTC.BUILD", AgoraRTC.BUILD, "VIDEO CLIENT::", appid);
         return new Promise((resolve, reject) => {
             if (!this.appid) {
                 console.warn("AgoraRTC appid must not be empty", this.appid);
@@ -327,14 +375,14 @@ class VideoClient extends BaseEvent {
             } else {
                 //初始化
                 this.client.init(this.appid, function() {
-                    console.log("INIT::", this.appid);
+                    console.log("INIT::", that.appid);
                     resolve();
-                }, function(info) {
+                }, function(info:any) {
                     var err = info;
                     console.warn("INIT ERROR::", err);
                     switch (err) {
                         case 'SERVICE_NOT_AVAILABLE':
-                            err = '服务不可用, APPID:' + this.appid;
+                            err = '服务不可用, APPID:' + that.appid;
                             break;
                         case 'CONNECT_GATEWAY_ERROR':
                             err = '无法连接 Web 服务器';
@@ -348,6 +396,7 @@ class VideoClient extends BaseEvent {
                             err = '请联系技术支持,续费视频服务!';
                             break;
                     }
+                    // @ts-ignore
                     reject(err, info);
                 });
             }
@@ -360,18 +409,20 @@ class VideoClient extends BaseEvent {
      * @param {String} appToken  
      * @param {Int32} token 
      */
-    connect(classid, appToken, token) {
+    connect(classid: any, appToken:any, token: string | number) {
         var channel = "td" + classid; //强制转换为字符串
+        var that = this;
         token = Number(token) || 0;
         return new Promise(function(resolve, reject) {
             //加入频道
-            this.client.join(appToken, channel, token, function(uid) {
-                this.token = uid;
-                this.channel = channel;
-                var data = this.getToken(uid);
-                console.log("JOIN 成功", this.appid, channel, uid, data.id, data.type, data.token);
+            that.client.join(appToken, channel, token, function(uid:any) {
+                that.token = uid;
+                that.channel = channel;
+                var data:any = that.getToken(uid);
+                console.log("JOIN 成功", that.appid, channel, uid, data.id, data.type, data.token);
+                // @ts-ignore
                 resolve(data.token, data.id, data.type);
-            }, function(info) {
+            }, function(info:any) {
                 var err = info;
                 console.warn("JOIN ERROR::", err);
                 switch (err) {
@@ -379,7 +430,7 @@ class VideoClient extends BaseEvent {
                         err = '无效 Token#' + appToken;
                         break;
                     case 101:
-                        err = '视频服务ID无效 <br> APPID:' + this.appid;
+                        err = '视频服务ID无效 <br> APPID:' + that.appid;
                         break;
                     case 102:
                         err = '课程ID无效 <br> ID:' + classid;
@@ -392,6 +443,7 @@ class VideoClient extends BaseEvent {
                         err = '请联系技术支持,续费视频服务!';
                         break;
                 }
+                // @ts-ignore
                 reject(err, info);
             });
         });
@@ -401,19 +453,16 @@ class VideoClient extends BaseEvent {
      * 发布视频流
      * @param {*} stream 
      */
-    publish(stream) {
+    publish(stream: any) {
         return new Promise((resolve, reject) => {
             var data = this.getToken(stream.getId());
-            this.client.publish(stream, function(err) {
-                console.warn("Publish local stream error: ", err);
+            this.client.publish(stream, function(err:any) {
+                // console.warn("Publish local stream error: ", err);
                 reject(err);
             });
 
             //本地音视频已上传回调事件(stream-published)
-            this.client.on('stream-published', function(evt) {
-                console.log("Publish local stream successfully");
-                resolve();
-            });
+            resolve();
         });
     }
 
@@ -421,7 +470,7 @@ class VideoClient extends BaseEvent {
      * 查询指定用户的视频流
      * @param {int32} token 
      */
-    getStream(token) {
+    getStream(token: string) {
         var stream = this.streamList[token];
         if (stream) {
             return stream;
@@ -431,12 +480,49 @@ class VideoClient extends BaseEvent {
         return null;
     }
 
+    player(token:any, element:any) {
+        var stream = this.getStream(token);
+        console.log('----');
+        
+        console.log(stream);
+        
+        if (stream) {
+            stream.isPlaying() && stream.stop();
+
+            //清空之前的videodisplay
+            if (document.querySelector('#display' + token)) {
+                element.removeChild(document.querySelector('#display' + token));
+            }
+
+            //容器videodisplay
+            let display = document.createElement('div');
+            display.setAttribute('id', "display" + token);
+            display.setAttribute('style', 'position:absolute; width:100%;height:100%; background:#000');
+            element.appendChild(display);
+
+            //视频dom
+            let video = document.createElement('video');
+            display.appendChild(video);
+            video.setAttribute('id', 'remote' + token);
+            // @ts-ignore
+            video.setAttribute('playsinline', true);
+            video.setAttribute('style', 'height: 100%; width: 100%; object-fit: cover;');
+            video.autoplay = true;
+            video.srcObject = stream.stream;
+            video.play().catch(err => {
+                console.error(token, 'stream 播放视频流失败', err);
+            });
+        } else {
+            console.warn('指定token的媒体流已经丢失或未获取...', token, element);
+        }
+    }
+
     /**
      * 开关视频流
      * @param {int32} token 
      * @param {Boolean} enabled 
      */
-    toggleVideo(token, enabled) {
+    toggleVideo(token: string, enabled:boolean) {
         var stream = this.getStream(token);
         if (stream) {
             console.log(token, "toggleVideo # Video Track", stream.getVideoTrack(), 'Audio Track', stream.getAudioTrack());
@@ -454,7 +540,7 @@ class VideoClient extends BaseEvent {
      * @param {int32} token 
      * @param {Boolean} muted 
      */
-    toggleAudio(token, muted) {
+    toggleAudio(token: string, muted: boolean) {
         const stream = this.getStream(token);
         if (stream) {
             console.log(token, "toggleAudio # Video Track", stream.getVideoTrack(), 'Audio Track', stream.getAudioTrack());
@@ -471,10 +557,10 @@ class VideoClient extends BaseEvent {
      * 停止视频流
      * @param {Object} stream 
      */
-    stop(stream) {
+    stop(stream:any) {
         if (stream) {
             const data = this.getToken(stream.getId());
-            this.client.unpublish(stream, (err) => {
+            this.client.unpublish(stream, (err:any) => {
                 console.warn("Unpublish local stream failed", data, err);
             });
         }
@@ -484,16 +570,17 @@ class VideoClient extends BaseEvent {
      * 离开，退出
      */
     exit() {
+        let that = this;
         return new Promise(function(resolve, reject) {
-            Object.keys(this.streamList).map(key => {
-                this.stopPlayer(key);
+            Object.keys(that.streamList).map(key => {
+                // that.stopPlayer(key);
             });
 
-            this.streamList = {};
-            this.client.leave(function() {
+            that.streamList = {};
+            that.client.leave(function() {
                 console.log("Leavel channel successfully");
                 resolve();
-            }, function(err) {
+            }, function(err:any) {
                 console.warn("Leave channel failed");
                 reject(err);
             });

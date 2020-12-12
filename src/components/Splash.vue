@@ -78,6 +78,7 @@ export default {
     left: 0;
     bottom: 0;
     right: 0;
+    z-index: 9999;
     overflow: hidden;
     background: linear-gradient(135deg, rgba(118, 180, 247, 1) 0%, rgba(78, 131, 229, 1) 100%);
 

@@ -1,100 +1,88 @@
 <template>
-
-    <body>
-        <el-container>
-            <el-header v-if="isDev">
-                <router-link to="/">{{ $t('home') }}</router-link> |
-                <router-link to="/about">{{ $t('about') }}</router-link> |
-                <router-link to="/1v1">1v1</router-link> |
-                <router-link to="/1v4">1v4</router-link>
-            </el-header>
-            <router-view />
-        </el-container>
-        <DebuggerPopover v-if="isDev"
-                         class="debug"
-                         @locale="localeChangeHandler"></DebuggerPopover>
-        <Splash></Splash>
-    </body>
+    <el-container id="app" class="jr">
+        <!--主体-->
+        <router-view/>
+        <!--加载进度-->
+        <splash-template/>
+    </el-container>
 </template>
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
-import { State, Mutation, namespace } from 'vuex-class';
+import {Component, Vue} from 'vue-property-decorator';
+import SplashTemplate from './components/Splash.vue';
+import DetectBrowser from '@/utils/detectBrowser';
 
-import Splash from './components/Splash.vue';
-import DebuggerPopover from './components/DebuggerPopover.vue';
-
-const VuexSocket = namespace('socket');
 @Component({
     name: "Main",
-    components: { Splash, DebuggerPopover }
+    components: {SplashTemplate}
 })
-export default class Main extends Vue {
-    private isDev: boolean = true;
 
-    private localeChangeHandler(lang: any) {
-        if (this.$i18n) {
-            this.$i18n.locale = lang || process.env.VUE_APP_I18N_LOCALE;
+export default class Main extends Vue {
+    /**
+     * @desc 检测浏览器
+     * @return true能使用，false不使用
+     */
+    private static _detectClient() {
+        const browser = new DetectBrowser();
+        return (browser.supporter() === "chrome") && (browser.compareVersion(browser.supporterVs(), "59") === 1)
+    }
+
+    /**
+     * @desc
+     */
+    private mounted() {
+        // 检测浏览器能否使用
+        let canUse = Main._detectClient();
+
+        if (canUse) {
+            // 连接socket
+            this.connectedSocket();
+        } else {
+            //提示下载
+            this.$confirm('您当前使用的是 safari:14.0 浏览器，不符合设备要求，请使用59版以上谷歌浏览器上课', '提示', {
+                confirmButtonText: '去下载',
+                cancelButtonText: '返回上一页',
+                type: 'warning',
+                closeOnClickModal: false,
+                closeOnPressEscape: false,
+                closeOnHashChange: false,
+                showClose: false,
+            }).then(() => {
+                window.open('https://www.uuabc.com/download.html', '_self')
+            }).catch(() => {
+                this.$router.back()
+            });
         }
     }
 
-    private socketConnected(data: any) {
-        this.splash.progress(5, "开始连接");
-        console.log('Main subscribe - connected', this.$socket.id, data);
-        this.$socket.emit('authenticate', 'token');
-    }
-
-    private socketAuthenticated(data: any) {
-        console.log('Main subscribe - authenticated', data);
-        const joinData: any = {
-            room_id: 'td6666',
-            user_id: Date.now(),
-            role: [1, 2, 3, 4][Math.floor(Math.random() * 4)],
-            info: {}
-        };
-        console.log('join', joinData);
-        //join加入房间
-        this.$socket.emit('join', joinData);
-        setTimeout(() => {
-            this.splash.complete('进入成功');
-        }, 3000);
-        // this.$message({ type: 'success', message: "连接数据" + JSON.stringify(joinData) });
-    }
-
-    beforeCreate() {
-        console.log("beforeCreate", this.$t('splash'));
-    }
-
-    private created() {
-        console.log("created", this.$t('splash'));
+    private connectedSocket() {
+        //初始化进度条
         this.splash.init(15);
-        this.isDev = process.env.NODE_ENV !== 'production';
-    }
 
-    private mounted() {
-        this.sockets.subscribe('connected', this.socketConnected);
-        this.sockets.subscribe('authenticated', this.socketAuthenticated);
+        this.sockets.subscribe('connected', (data: any) => {
+            this.splash.progress(5, "开始连接");
+            this.$socket.emit('authenticate', 'token');
+        });
+        this.sockets.subscribe('authenticated', (data: any) => {
+            let {room_id, user_id, role, name, avatar} = this.$route.query;
+            const joinData = {
+                room_id,
+                user_id,
+                role,
+                info: {
+                    name,
+                    avatar,
+                },
+            };
+            //join加入房间
+            this.$socket.emit('join', joinData);
+            setTimeout(() => {
+                this.splash.complete('进入成功');
+            }, 3000);
+        });
     }
 }
+
 </script>
 <style lang="scss">
-html,
-body,
-body > section {
-    padding: 0;
-    margin: 0;
-    width: 100%;
-    height: 100%;
 
-    .el-header {
-        text-align: center;
-        background: rgb(179, 216, 255);
-        line-height: 60px;
-    }
-
-    .debug {
-        position: fixed;
-        right: 10px;
-        top: 10px;
-    }
-}
 </style>

@@ -27,5 +27,7 @@ declare module "vue/types/vue" {
     axios: axios;
     $axios: axios;
     splash: Splash;
+    $videoStream: any;
+    $videoClient: any;
   }
 }

@@ -33,7 +33,21 @@ Vue.use(new VueSocketIO({
     timeout: 20000
   }
 }))
+import { VideoStream, VideoClient } from '@/plugins/WebVideoClient'
+Vue.prototype.$videoStream = new VideoStream();
+Vue.prototype.$videoClient = new VideoClient();
+
+import MyConsole from '@/plugins/MyConsole.ts'
+window.MyConsole = new MyConsole();
+
+import service from '@/api/service'
+Vue.prototype.$api = service;
+
+import * as main from '@/utils/constants'
+
+window && Object.assign(window, main)
+console.log(window)
 
 import i18n from './plugins/i18n';
 Vue.config.productionTip = false;
-new Vue({ router, store, i18n, render: h => h(Main) }).$mount("body");
+new Vue({ router, store, i18n, render: h => h(Main) }).$mount("#app");

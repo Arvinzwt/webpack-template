@@ -1,16 +1,25 @@
 export default {
     namespaced: true,
     state: {
-        
+        v1: {
+            chat: [],//聊天内容
+            mute: false,//学生是否禁言
+            usrList: [],//为已在线用户集合（不包括"我"自己）
+            diamond: 0,//学生钻石数目
+            connection: 0,//当前连接状态 0未连接 1正常进入，2拒绝进入，3多端进入被踢
+            heart: 0,//激励动画
+        }
+
     },
     actions: {
         /**
          * @desc 进入成功
          * @param commit[object]
-         * @param data 为已在线用户集合
+         * @param data 为已在线用户集合（不包括"我"自己）
          */
         SOCKET_enterSuccess({commit}: any, data: any) {
-            console.log('actions--Socket--enterSuccess', data);
+            commit("SOCKET_v1_usrList", data)
+            commit("SOCKET_connection", 1)
         },
 
         /**
@@ -20,7 +29,7 @@ export default {
          * @param data[message] 错误原因
          */
         SOCKET_enterReject({commit}: any, data: any) {
-            console.log('actions--Socket--enterReject', data);
+            commit("SOCKET_connection", 2)
         },
 
         /**
@@ -29,58 +38,106 @@ export default {
          * @param data[message] 错误原因
          */
         SOCKET_offline({commit}: any, data: any) {
-            console.log('actions--Socket--offline', data);
+            commit("SOCKET_connection", 3)
         },
 
         /**
          * @desc 用户进入
-         * @param commit[object]
-         * @param data[userid] 用户id
-         * @param data[userType] 用户类型
-         * @param data[info]  info为扩展数据, 包含不限于 name、avatar
          */
-        SOCKET_userEnter({commit}: any, data: any) {
-            console.log('actions--Socket--userEnter', data);
+        SOCKET_userEnter({commit, state}: any, data: any) {
+            commit("SOCKET_v1_usrList", state.v1.usrList.concat(data))
         },
 
         /**
          * @desc 用户退出
-         * @param commit[object]
-         * @param data[userid] 用户id
-         * @param data[userType] 用户类型
-         * @param data[info]  info为扩展数据, 包含不限于 name、avatar
          */
-        SOCKET_userQuit({commit}: any, data: any) {
-            console.log('actions--Socket--userQuit', data);
+        SOCKET_userQuit({commit, state}: any, data: any) {
+            commit("SOCKET_v1_userQui", data)
         },
 
         /**
          * @desc 其它用户共享的数据
          * @param commit[object]
-         * @param data
+         * @param digital
          */
-        SOCKET_share({commit}: any, data: any) {
-            console.log('actions--Socket--share', data);
+        SOCKET_share({commit}: any, digital: [any, any]) {
+            let [data = {}, usr = {}] = digital
+            // 聊天
+            if (data['event'] === 'chat') {
+                commit('SOCKET_v1_chat', Object.assign(data, usr))
+            }
+
+            // 禁言
+            if (data['event'] === 'chatting') {
+                commit('SOCKET_v1_mute', data.data.enabled)
+            }
+
+            // 钻石
+            if (data['event'] === 'flower') {
+                commit('SOCKET_v1_diamond', data.data.total)
+            }
+
+            // 激励动画
+            if (data['event'] === 'excit') {
+                commit('SOCKET_v1_heart', data.data.index)
+            }
         },
     },
     mutations: {
         /**
-         * @desc 存储用户信息
-         * @param state[object]
-         * @param data[array]
+         * @desc 存储连接状态
          */
-        SOCKET_list(state: any, data: any) {
-            console.log('mutations----SOCKET_list', data);
+        SOCKET_connection(state: any, data: number) {
+            state.v1.connection = data
         },
 
         /**
-         * @desc 存储连接状态
-         * @param state[object]
-         * @param data[boolean]
+         * @desc 存储聊天内容
          */
-        SOCKET_connection(state: any, data: boolean) {
-            console.log('mutations----SOCKET_connection', data);
+        SOCKET_v1_chat(state: any, data: object) {
+            state.v1.chat.push(data)
+        },
+
+        /**
+         * @desc 存储禁言状态
+         */
+        SOCKET_v1_mute(state: any, data: boolean) {
+            state.v1.mute = data
+        },
+
+        /**
+         * @desc 存储用户列表
+         */
+        SOCKET_v1_usrList(state: any, data: boolean) {
+            state.v1.usrList = data
+        },
+
+        /**
+         * @desc 删除退出用户
+         */
+        SOCKET_v1_userQui(state: any, data: any) {
+            state.v1.usrList.forEach((item: any, index: number) => {
+                if (item.user_id === data.user_id) {
+                    state.v1.usrList.splice(index, 1)
+                    return false;
+                }
+            })
+        },
+
+        /**
+         * @desc 存储钻石数据
+         */
+        SOCKET_v1_diamond(state: any, data: number) {
+            state.v1.diamond = data
+        },
+
+        /**
+         * @desc 计算激励动画
+         */
+        SOCKET_v1_heart(state: any, data: number) {
+            state.v1.heart = data
         }
+
     },
     getters: {}
 }
