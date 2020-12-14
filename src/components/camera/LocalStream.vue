@@ -15,20 +15,17 @@
             <div class="jr-video-item-placeholder type1"></div>
             
             <!-- 画笔/禁言 -->
-            <div class="jr-video-item-icon icon3" v-if="urlQuery.role == UserType.STUDENT">
-                <span class="iconfont iconicon8"></span>
-                <span class="ml-3 iconfont iconmaikefeng-tianchong"></span>
+            <div class="jr-video-item-icon jr-opera-list jr-opera-student" v-if="urlQuery.role == UserType.STUDENT">
+                <span class="iconfont" :class="studentLimit.isPen ? 'iconhuabi' : 'iconjinyonghuabi'"></span>
+                <span class="iconfont" :class="studentLimit.isMagic ? 'iconmofabang' : 'iconmofabang'"></span>
+                <span class="iconfont" :class="studentLimit.isTalk ? 'iconhuatong' : 'iconjinyan'"></span>
             </div>
 
-            <div class="jr-parent-limit" v-if="urlQuery.role == UserType.ADMIN">
-                <div class="jr-parent-block jr-local-chat">私聊</div>
-                <div class="jr-parent-block jr-local-refresh">刷新</div>
-            </div>
 
         </div>
 
-        
-        <div class="jr-video-item mt-3" v-show='!cameraId'>
+        <!-- 缺省图 -->
+        <div class="jr-video-item mt-3" v-show='!cameraId' >
             <div class="jr-video-item-placeholder type2"></div>
         </div>
         
@@ -54,6 +51,11 @@ export default class Local extends Vue {
     private intervalId?: any;
     private level: number = 0;
     private cameraId: string | number = 0;
+    private studentLimit: any = {
+        isPen: true,
+        isMagic: true,
+        isTalk: true,
+    };
 
     get microphones() {
         return this.$videoStream ? this.$videoStream.microphones : [];
@@ -141,27 +143,6 @@ $localHeight: 270px;
             z-index: -1; 
             width: 100%;
             height: 100%;
-        }
-    }
-    .jr-parent-limit {
-        position: relative;
-        z-index: 9;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100%;
-        .jr-parent-block {
-            display: inline-block;
-            width: 70px;
-            line-height: 26px;
-            text-align: center;
-            background-color: #b53c36;
-            border-radius: 15px;
-            cursor: pointer;
-            &:first-child {
-                margin-bottom: 50px;;
-            }
         }
     }
 }

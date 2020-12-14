@@ -3,7 +3,7 @@
         <!--主体-->
         <router-view/>
         <!--加载进度-->
-        <splash-template/>
+        <!--<splash-template/>-->
     </el-container>
 </template>
 <script lang="ts">
@@ -27,7 +27,7 @@ export default class Main extends Vue {
     }
 
     /**
-     * @desc
+     * @desc 检测浏览器
      */
     private mounted() {
         // 检测浏览器能否使用
@@ -54,10 +54,13 @@ export default class Main extends Vue {
         }
     }
 
+    /**
+     * @desc 连接socket
+     */
     private connectedSocket() {
         //初始化进度条
         this.splash.init(15);
-
+        // 连接socket
         this.sockets.subscribe('connected', (data: any) => {
             this.splash.progress(5, "开始连接");
             this.$socket.emit('authenticate', 'token');

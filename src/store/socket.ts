@@ -6,10 +6,10 @@ export default {
             mute: false,//学生是否禁言
             usrList: [],//为已在线用户集合（不包括"我"自己）
             diamond: 0,//学生钻石数目
-            connection: 0,//当前连接状态 0未连接 1正常进入，2拒绝进入，3多端进入被踢
+            connection: 0,//当前连接状态 0未连接 1正常进入，2拒绝进入，3多端进入被踢，4学生被管理员刷新，5老师被管理员刷新
             heart: 0,//激励动画
+            talk: [],//教师和管理员私聊
         }
-
     },
     actions: {
         /**
@@ -81,6 +81,21 @@ export default {
             if (data['event'] === 'excit') {
                 commit('SOCKET_v1_heart', data.data.index)
             }
+
+            // 激励动画
+            if (data['event'] === 'talk') {
+                commit('SOCKET_v1_talk', data.data)
+            }
+
+            // 被管理员刷新
+            if (data['event'] === 'refresh') {
+                if (data.data.type === 1) {
+                    commit('SOCKET_connection', 4)
+                }
+                if (data.data.type === 2) {
+                    commit('SOCKET_connection', 5)
+                }
+            }
         },
     },
     mutations: {
@@ -136,6 +151,13 @@ export default {
          */
         SOCKET_v1_heart(state: any, data: number) {
             state.v1.heart = data
+        },
+
+        /**
+         * @desc 教师和管理员私聊
+         */
+        SOCKET_v1_talk(state: any, data: any) {
+            state.v1.talk.push(data)
         }
 
     },

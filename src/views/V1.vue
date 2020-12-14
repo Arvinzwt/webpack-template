@@ -31,6 +31,7 @@
                     <ul>
                         <li v-for="(item,index) in v1.usrList" :key="index">{{ item }}</li>
                     </ul>
+                    <p style="margin: 6px 0">{{ UserType[user_type] }}</p>
                 </el-main>
                 <!--教师按钮-画板案板-->
                 <el-footer v-if="user_type==='2'&&!showHeart" class="jr-courseware-footer type1" height="80px">
@@ -115,11 +116,15 @@
                 </el-container>
             </el-aside>
         </el-container>
+
+        <!--私聊弹窗-->
+        <private-chat/>
     </el-container>
 </template>
 <script lang="ts">
 import {Component, Vue, Watch} from "vue-property-decorator";
 import HeaderTemplate from '@/components/Header.vue';
+import PrivateChat from '@/components/Dialog/PrivateChat.vue';
 import cameraHome from '@/components/camera/index.vue';
 import animation from '@/utils/animation';
 import {namespace} from 'vuex-class';
@@ -130,7 +135,8 @@ const VuexTeacher = namespace('Teacher');
     name: "V1",
     components: {
         cameraHome,
-        HeaderTemplate
+        HeaderTemplate,
+        PrivateChat
     }
 })
 export default class V1 extends Vue {
@@ -164,6 +170,10 @@ export default class V1 extends Vue {
         return this.$route.query.role
     }
 
+    get UserType() {
+        return window.UserType
+    }
+
     /**
      * @desc 监听聊天列表，将列表滚动到底部
      */
@@ -172,7 +182,6 @@ export default class V1 extends Vue {
         this.$nextTick(() => {
             const scrollRef: any = this.$refs['scrollRef']
             scrollRef.scrollTop = scrollRef.scrollHeight;
-            console.log(this.v1)
         })
     }
 
@@ -200,6 +209,7 @@ export default class V1 extends Vue {
      */
     @Watch("v1.connection")
     private connectionChange(val: number) {
+        // 被踢出
         if (val === 3) {
             this.$confirm('您已在其他设备上登录，当前客户端已下线', '下线', {
                 confirmButtonText: '离开教室',
@@ -215,6 +225,17 @@ export default class V1 extends Vue {
             }).catch(() => {
 
             });
+        }
+
+        // 被管理员刷新
+        if (val === 4 && this.user_type === '1') {
+            this.$message.success('学生刷新')
+            window.location.reload();
+        }
+        if (val === 5 && this.user_type === '2') {
+            this.$message.success('老师刷新')
+
+            window.location.reload();
         }
     }
 

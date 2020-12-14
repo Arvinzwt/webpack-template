@@ -1,8 +1,13 @@
 <template>
     <div class="jr-stream-wrap">
-        <cameraRemote ref="remote"></cameraRemote>
+        <template v-if="urlQuery.role == undefined || (urlQuery.role == UserType.STUDENT || urlQuery.role == UserType.TEACHER)">
+            <cameraRemote ref="remote"></cameraRemote>
+            <cameraLocal ref="LocalStream" @complate="localVideoComplate" @error="localVideoError"></cameraLocal>
+        </template>
 
-        <cameraLocal ref="LocalStream" @complate="localVideoComplate" @error="localVideoError"></cameraLocal>
+        <template v-if="urlQuery.role == UserType.PARENT">
+            <cameraRemote style="margin-bottom: 10px" :ref="'remote' + item.user_id" :userId="item.user_id" v-for="(item, idx) in v1.usrList" :key="idx"></cameraRemote>
+        </template>
 
     </div>
 </template>
@@ -24,18 +29,21 @@ const VuexUser = namespace("Teacher");
     },
 })
 export default class Index extends Vue {
-    // private appToken: string = "";
-    // private channel: any = this.$route.query.channel;
-    // private token: any = this.$route.query.token;
-    // private uid: any = this.$route.query.uid;
-    // private query: any = this.$route.query;
     private appid: string = "82dc0c2602d24cb9b5098c2c7f8ce76f";
-
     @VuexUser.State("nickname") private nickname: string | undefined;
 
     get urlQuery():any {
         return this.$route.query;
     }
+
+    get UserType():any {
+        return window.UserType
+    }
+
+    get v1():any {        
+        return this.$store.state.Socket.v1;
+    }
+
 
     private mounted() {
         this.init(this.appid);
@@ -60,13 +68,14 @@ export default class Index extends Vue {
         if (promise) {
             promise
                 .then( () => {
-                    this.initVideoClient(this.urlQuery.channel, this.urlQuery.appToken, this.urlQuery.uid);
+                    this.initVideoClient();
                 })
                 .catch((err) => {
                     this.$alert("是否开始学习", "标题名称", {
                         confirmButtonText: "确定",
                         callback: (action) => {
                             audio.play();
+                            this.initVideoClient();
                         },
                     });
                     console.log("autoplay 策略检查:不可用");
@@ -80,7 +89,10 @@ export default class Index extends Vue {
             .connect(this.urlQuery.channel, this.urlQuery.token, this.urlQuery.user_id)
             .then((token: string, id: number, type: string) => {
                 console.log("connect success");
-                this.$videoClient.publish(this.$videoStream.localStream);
+                if(this.urlQuery.role == this.UserType.STUDENT || this.urlQuery.role == this.UserType.TEACHER) { 
+                    this.$videoClient.publish(this.$videoStream.localStream);
+                }
+
             })
             .catch((req: any) => {
                 console.warn("conect fail" + req);
@@ -88,15 +100,32 @@ export default class Index extends Vue {
     }
 
     // 初始化本地client
-    private initVideoClient(channel: string, appToken: string, uid: string) {
+    private initVideoClient() {
         let videoClient = this.$videoClient;
         videoClient
             .init(this.appid)
             .then(() => {
                 console.warn("client init success");
                 this.$nextTick(() => {
-                    // @ts-ignore
-                    this.$refs["remote"].init(videoClient);
+                    
+                    if(this.urlQuery.role == this.UserType.STUDENT || this.urlQuery.role == this.UserType.TEACHER) {
+                        // @ts-ignore
+                        this.$refs[`remote`].init(videoClient);
+                    } else {
+                        
+                        for (let index = 0; index < this.v1.usrList.length; index++) {
+                            let ele = this.v1.usrList[index];                           
+                            this.$nextTick(() => {
+                                // @ts-ignore
+                                this.$refs[`remote${ele.user_id}`][0].init(videoClient);
+                            })
+                        }
+                    }
+
+
+
+ 
+                    
                 });
                 this.joinClient(videoClient);
             })
@@ -107,11 +136,18 @@ export default class Index extends Vue {
 
     private init(appid: string = ""): void | boolean {
         this.appid = appid;
-        if (!this.urlQuery.token || !this.urlQuery.channel) {
+        console.log(this.urlQuery.role);
+        
+        if (!this.urlQuery.token || !this.urlQuery.channel || !this.urlQuery.role) {
             console.warn("url 缺少参数，无法获取视频流");
             return false;
         }
-        if (+this.urlQuery.is) {
+        if (+this.urlQuery.is ) {
+            if(this.urlQuery.role == this.UserType.PARENT || this.urlQuery.role == this.UserType.ADMIN) {
+                console.warn('家长/管理员不创建流，直接订阅');
+                this.localVideoComplate();
+                return false;
+            }
             // @ts-ignore
             this.$refs["LocalStream"].init(this.token);
         }

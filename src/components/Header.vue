@@ -106,7 +106,7 @@ export default class Header extends Vue {
         let videoClient = this.$videoClient;
         //本地网络质量
         videoClient.on('network', (uplink:any, downlink:any) => {
-            var levelClass = 2;
+            var levelClass = 2;         // 3 信号最好；1 信号最差
             if([1,2].includes(uplink) && [1,2].includes(downlink)) {
                 levelClass = 3;
             } else if((uplink <= 5 && uplink > 2) || (downlink <= 5 && downlink > 2)) {
@@ -141,33 +141,9 @@ export default class Header extends Vue {
             closeOnHashChange: false,
             showClose: false,
         }).then(() => {
-            this.splash.reset();
-            this.connectedSocket();
+            window.location.reload();
         }).catch(() => {
         });
-    }
-
-    private connectedSocket() {
-        //初始化进度条
-        this.splash.init(15);
-        this.$socket.emit('authenticate', 'token');
-        this.splash.progress(5, "开始连接");
-
-        let {room_id, user_id, role, name, avatar} = this.$route.query;
-        const joinData = {
-            room_id,
-            user_id,
-            role,
-            info: {
-                name,
-                avatar,
-            },
-        };
-        //join加入房间
-        this.$socket.emit('join', joinData);
-        setTimeout(()=>{
-            this.splash.complete('进入成功');
-        },2000)
     }
 
     /**

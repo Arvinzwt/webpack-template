@@ -2,6 +2,20 @@ import AgoraRTC from 'agora-rtc-sdk'
 import BaseEvent from '@/utils/BaseEvent'
 
 console.log('设备检测', AgoraRTC.VERSION, AgoraRTC.checkSystemRequirements());
+// @ts-ignore
+AgoraRTC.netWorkLostLevel = (num:any) => {
+    if (num >= 0 && num <= 0.01) {
+        return 1;//很好
+    } else if (num > 0.01 && num >= 0.05) {
+        return 2;//良好
+    } else if (num > 0.05 && num >= 0.10) {
+        return 3;//一般
+    } else if (num > 0.10 && num >= 0.20) {
+        return 4;//比较差
+    } else {
+        return 5;//很差
+    }
+}
 /*******************************************************************
  * 本地视频
  *******************************************************************/
@@ -242,20 +256,25 @@ class VideoClient extends BaseEvent {
             console.log("Subscribe remote stream successfully: ", stream.getId(), stream.hasVideo(), stream.hasAudio(), stream.getAttributes());
             var user:any = that.getToken(uid);
             that.emit('stream', user.id, user.type, user.token);
+            if(stream.intervalId) return;
+
+            stream.intervalId = setInterval(() => {
+                stream.getStats((data:any) => {
+                    var apl = data.audioReceivePacketsLost / (data.audioReceivePackets - data.audioReceivePacketsLost);
+                    var vpl = data.videoReceivePacketsLost / (data.videoReceivePackets - data.videoReceivePacketsLost);
+                    this.emit('lostlevel', user, {
+                        value: (apl * 100).toFixed(3),
+                        // @ts-ignore
+                        level: AgoraRTC.netWorkLostLevel(apl)
+                    }, {
+                        value: (vpl * 100).toFixed(3),
+                        // @ts-ignore
+                        level: AgoraRTC.netWorkLostLevel(vpl)
+                    });
+
+                })
+            }, 1500)
             
-            stream.getStats((data:any) => {
-                var apl = data.audioReceivePacketsLost / (data.audioReceivePackets - data.audioReceivePacketsLost);
-                var vpl = data.videoReceivePacketsLost / (data.videoReceivePackets - data.videoReceivePacketsLost);
-                // that.emit('lostlevel', user, {
-                //     value: (apl * 100).toFixed(3),
-                //     // @ts-ignore
-                //     level: AgoraRTC.netWorkLostLevel(apl)
-                // }, {
-                //     value: (vpl * 100).toFixed(3),
-                //     // @ts-ignore
-                //     level: AgoraRTC.netWorkLostLevel(vpl)
-                // });
-            })
         });
         //远程音视频流已删除回调事件(stream-removed)
         client.on('stream-removed', (evt:any) => {
@@ -376,6 +395,7 @@ class VideoClient extends BaseEvent {
                 //初始化
                 this.client.init(this.appid, function() {
                     console.log("INIT::", that.appid);
+                    // @ts-ignore
                     resolve();
                 }, function(info:any) {
                     var err = info;
@@ -462,6 +482,7 @@ class VideoClient extends BaseEvent {
             });
 
             //本地音视频已上传回调事件(stream-published)
+            // @ts-ignore
             resolve();
         });
     }
@@ -471,6 +492,8 @@ class VideoClient extends BaseEvent {
      * @param {int32} token 
      */
     getStream(token: string) {
+        console.log(this.streamList);
+        
         var stream = this.streamList[token];
         if (stream) {
             return stream;
@@ -478,6 +501,25 @@ class VideoClient extends BaseEvent {
             console.warn('指定token的媒体流已经丢失', token);
         }
         return null;
+    }
+
+    /** 弃用:
+     * 显示播放本地视频流
+     * vue项目推荐使用 :srcObject.prop="stream" 
+     *  */
+    display(videoElement: any, token:any) {
+        var stream = this.getStream(token);
+        const video = videoElement;
+        if (stream) {
+            stream.isPlaying() && stream.stop();
+            video.autoplay = true;
+            video.srcObject = stream.stream;
+            video.play().catch((err:any) => {
+                console.warn('localStream 播放视频流失败', err);
+            });
+
+            //TODO getSates计算清晰度
+        }
     }
 
     player(token:any, element:any) {
@@ -491,12 +533,13 @@ class VideoClient extends BaseEvent {
 
             //清空之前的videodisplay
             if (document.querySelector('#display' + token)) {
-                element.removeChild(document.querySelector('#display' + token));
+                // element.removeChild(document.querySelector('#display' + token));
             }
 
             //容器videodisplay
             let display = document.createElement('div');
             display.setAttribute('id', "display" + token);
+            display.setAttribute('data-user-id',  token);
             display.setAttribute('style', 'position:absolute; width:100%;height:100%; background:#000');
             element.appendChild(display);
 
@@ -579,6 +622,7 @@ class VideoClient extends BaseEvent {
             that.streamList = {};
             that.client.leave(function() {
                 console.log("Leavel channel successfully");
+                // @ts-ignore
                 resolve();
             }, function(err:any) {
                 console.warn("Leave channel failed");
