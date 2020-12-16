@@ -4,6 +4,7 @@ import VueSocketIO from 'vue-socket.io';
 import VueI18n from 'vue-i18n'
 import axios from 'axios';
 import Splash from './plugins/Splash';
+import Api from './api/index'
 
 declare module '*.svg'
 // declare module '*.png'
@@ -29,5 +30,6 @@ declare module "vue/types/vue" {
     splash: Splash;
     $videoStream: any;
     $videoClient: any;
+    $api: Api.api;
   }
 }

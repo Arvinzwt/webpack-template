@@ -2,9 +2,7 @@
     <!--教师/管理员-私聊-->
     <div class="jr-private-chat">
         <slot>
-            <!--<el-link @click="openDialog">私聊</el-link>
-                        <el-link @click="refreshStudent">刷新1</el-link>
-                        <el-link @click="refreshTeacher">刷新2</el-link>-->
+            <div class="jr-parent-block jr-local-chat" @click="openDialog">私聊</div>
         </slot>
         <!--弹窗-->
         <el-dialog :visible.sync="dialog.show"
@@ -116,31 +114,6 @@ export default {
             }
         },
 
-        /**
-         * 管理员刷新学生
-         */
-        refreshStudent() {
-            // 发给数据端
-            this.$socket.emit('share', {
-                event: 'refresh',
-                data: {
-                    type: 1
-                }
-            });
-        },
-
-        /**
-         * 管理员刷新老师
-         */
-        refreshTeacher() {
-            // 发给数据端
-            this.$socket.emit('share', {
-                event: 'refresh',
-                data: {
-                    type: 2
-                }
-            });
-        }
     }
 }
 </script>

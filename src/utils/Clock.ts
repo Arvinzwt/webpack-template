@@ -104,7 +104,6 @@ class ClockTime extends BaseEvent {
     set serverTime(value) {
         this._clientTime = parseInt(Date.now() / 1000 + '');
         this._serverTime = value;
-        console.log("客户端时间设置成功", value);
     }
 
     get serverTime() {

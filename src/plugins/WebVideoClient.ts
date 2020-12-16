@@ -1,7 +1,7 @@
 import AgoraRTC from 'agora-rtc-sdk'
 import BaseEvent from '@/utils/BaseEvent'
 
-console.log('设备检测', AgoraRTC.VERSION, AgoraRTC.checkSystemRequirements());
+// console.log('设备检测', AgoraRTC.VERSION, AgoraRTC.checkSystemRequirements());
 // @ts-ignore
 AgoraRTC.netWorkLostLevel = (num:any) => {
     if (num >= 0 && num <= 0.01) {
@@ -172,20 +172,18 @@ class VideoStream extends BaseEvent {
     createStream(options:any) {
         options = options || this.options;
         this.videoProfile = this.videoProfile || '240P_3';
-        console.log('Create Stream', this.element, this.videoProfile, options);
+        // console.log('Create Stream', this.element, this.videoProfile, options);
         return new Promise((resolve, reject) => {
             this.localStream = AgoraRTC.createStream(options);
             this.localStream.setVideoProfile(this.videoProfile);
             this.localStream.on("accessAllowed", () => {
                 this.access = true;
-                console.log("localStream # accessAllowed");
             });
             this.localStream.on("accessDenied", () => {
                 this.access = false;
                 console.warn("localStream # accessDenied");
             });
             this.localStream.init(() => {
-                console.log("getUserMedia successfully");
                 resolve(this.localStream);
             }, (err:any) => {
                 console.log("getUserMedia failed", err);
@@ -223,8 +221,8 @@ class VideoClient extends BaseEvent {
         AgoraRTC.Logger.setLogLevel(AgoraRTC.Logger.INFO);
         AgoraRTC.Logger.enableLogUpload();
         AgoraRTC.getSupportedCodec().then(function(result) {
-            console.log(`Supported video codec: ${result.video.join(", ")}`);
-            console.log(`Supported audio codec: ${result.audio.join(", ")}`);
+            // console.log(`Supported video codec: ${result.video.join(", ")}`);
+            // console.log(`Supported audio codec: ${result.audio.join(", ")}`);
         });
         // @ts-ignore
         this.client = AgoraRTC.createClient({ mode: 'live' });
@@ -243,9 +241,10 @@ class VideoClient extends BaseEvent {
             const stream = evt.stream;
             const uid = stream.getId();
             console.warn("New stream added: ", uid);
-            console.log("Subscribe ", stream);
+            // console.log("Subscribe ", stream);
+            that.emit('watch-stream', uid)
             client.subscribe(stream, function(err:any) {
-            console.log("Subscribe stream failed", uid, err);
+                console.log("Subscribe stream failed", uid, err);
             });
         });
         //远程音视频流已订阅回调事件(stream-subscribed)
@@ -394,7 +393,7 @@ class VideoClient extends BaseEvent {
             } else {
                 //初始化
                 this.client.init(this.appid, function() {
-                    console.log("INIT::", that.appid);
+                    // console.log("INIT::", that.appid);
                     // @ts-ignore
                     resolve();
                 }, function(info:any) {
@@ -439,7 +438,7 @@ class VideoClient extends BaseEvent {
                 that.token = uid;
                 that.channel = channel;
                 var data:any = that.getToken(uid);
-                console.log("JOIN 成功", that.appid, channel, uid, data.id, data.type, data.token);
+                // console.log("JOIN 成功", that.appid, channel, uid, data.id, data.type, data.token);
                 // @ts-ignore
                 resolve(data.token, data.id, data.type);
             }, function(info:any) {
@@ -510,6 +509,9 @@ class VideoClient extends BaseEvent {
     display(videoElement: any, token:any) {
         var stream = this.getStream(token);
         const video = videoElement;
+
+        console.log(video);
+        
         if (stream) {
             stream.isPlaying() && stream.stop();
             video.autoplay = true;
@@ -602,7 +604,7 @@ class VideoClient extends BaseEvent {
      */
     stop(stream:any) {
         if (stream) {
-            const data = this.getToken(stream.getId());
+            const data = this.getToken(stream.getId());            
             this.client.unpublish(stream, (err:any) => {
                 console.warn("Unpublish local stream failed", data, err);
             });

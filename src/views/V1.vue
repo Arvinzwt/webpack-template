@@ -117,14 +117,11 @@
             </el-aside>
         </el-container>
 
-        <!--私聊弹窗-->
-        <private-chat/>
     </el-container>
 </template>
 <script lang="ts">
 import {Component, Vue, Watch} from "vue-property-decorator";
 import HeaderTemplate from '@/components/Header.vue';
-import PrivateChat from '@/components/Dialog/PrivateChat.vue';
 import cameraHome from '@/components/camera/index.vue';
 import animation from '@/utils/animation';
 import {namespace} from 'vuex-class';
@@ -136,7 +133,6 @@ const VuexTeacher = namespace('Teacher');
     components: {
         cameraHome,
         HeaderTemplate,
-        PrivateChat
     }
 })
 export default class V1 extends Vue {

@@ -1,13 +1,20 @@
 <template>
     <div class="jr-stream-wrap">
-        <template v-if="urlQuery.role == undefined || (urlQuery.role == UserType.STUDENT || urlQuery.role == UserType.TEACHER)">
-            <cameraRemote ref="remote"></cameraRemote>
+        <template v-if="urlQuery.role == undefined || !roleRank">
+            <cameraRemote :ref="'remote' + user_id" :userId='user_id'></cameraRemote>
             <cameraLocal ref="LocalStream" @complate="localVideoComplate" @error="localVideoError"></cameraLocal>
         </template>
 
-        <template v-if="urlQuery.role == UserType.PARENT">
-            <cameraRemote style="margin-bottom: 10px" :ref="'remote' + item.user_id" :userId="item.user_id" v-for="(item, idx) in v1.usrList" :key="idx"></cameraRemote>
+        <template v-if="urlQuery.role == UserType.PARENT || urlQuery.role == UserType.ADMIN">
+            <cameraRemote style="margin-bottom: 10px" 
+                :ref="'remote' + item" 
+                :userId="item" 
+                v-for="(item, idx) in enterUids" 
+                :key="idx">
+            </cameraRemote>
         </template>
+
+        <DeviceForbid :isDeviceForbid='isDeviceForbid' @close="onCloseDevice" />
 
     </div>
 </template>
@@ -15,6 +22,7 @@
 import { Component, Vue } from "vue-property-decorator";
 import cameraLocal from "@/components/camera/LocalStream.vue";
 import cameraRemote from "@/components/camera/Remote.vue";
+import DeviceForbid from "@/components/Dialog/DeviceForbid.vue";
 import { State, Mutation, namespace } from "vuex-class";
 
 // import hasAudioPlay from "@/utils/hasAudioPlay";
@@ -26,10 +34,14 @@ const VuexUser = namespace("Teacher");
     components: {
         cameraLocal,
         cameraRemote,
+        DeviceForbid
     },
 })
 export default class Index extends Vue {
     private appid: string = "82dc0c2602d24cb9b5098c2c7f8ce76f";
+    private user_id: string = '';
+    private enterUids: any = [];
+    private isDeviceForbid:boolean = false;
     @VuexUser.State("nickname") private nickname: string | undefined;
 
     get urlQuery():any {
@@ -44,17 +56,77 @@ export default class Index extends Vue {
         return this.$store.state.Socket.v1;
     }
 
+    
+    /** 
+     * url中的老师，学生  -> 0
+     * 管理员, 家长      -> 1
+    */
+    get roleRank(): number {
+        let temp = this.urlQuery.role == this.UserType.PARENT || this.urlQuery.role == this.UserType.ADMIN
+            ? 1 : 0;
+        return temp;
+    }
+    
 
     private mounted() {
         this.init(this.appid);
+        this.bindStream();
+    }
+
+    private onCloseDevice() {
+        this.isDeviceForbid = false;
     }
 
     private handleError(err: any) {
         console.error(err);
     }
 
+    // 本地视频错误；
     private localVideoError(err: any) {
         console.error(err);
+        if(err === 'NotAllowedError') {
+            this.isDeviceForbid = true;
+        }
+    }
+
+    private bindStream() {
+        let videoClient = this.$videoClient;
+
+        videoClient.on("stream", (id:number, type:number, token:string) => {
+            this.user_id = token;
+            if(!this.enterUids.includes(token)) {
+                this.enterUids.push(token);
+            }
+
+            
+
+            this.$nextTick(() => {
+                let refDom:any = this.$refs[`remote${token}`];
+                refDom = [refDom].flat(3);
+                console.log(refDom);
+
+                if(this.roleRank) {
+                    refDom[0].bind(token);
+                } else {
+                    refDom[0].bind(token, 1);
+                }
+            })
+            
+        })
+
+        videoClient.on("removed", (id:number, type:number, token:string) => {
+            console.log("STREAM REMOVED :::", id, type, token);
+
+            let refDom:any = this.$refs[`remote${token}`];
+            
+            if(this.roleRank) {
+                refDom[0].removeLeaveClass(token);
+            } else {
+                refDom.removeLeaveClass(token);
+            }
+
+            videoClient.stopPlayer(token);
+        });
     }
 
     private localVideoComplate() {
@@ -63,11 +135,17 @@ export default class Index extends Vue {
         audio.src = autoplay;
         var promise = audio.play();
         audio.volume = 0.01;
-        console.log(promise);
-
+        
         if (promise) {
-            promise
-                .then( () => {
+            this.$alert("是否开始学习", "提示", {
+                confirmButtonText: "确定",
+                callback: (action) => {
+                    audio.play();
+                    this.initVideoClient();
+                },
+            });
+            return false;
+            promise.then( () => {
                     this.initVideoClient();
                 })
                 .catch((err) => {
@@ -81,18 +159,15 @@ export default class Index extends Vue {
                     console.log("autoplay 策略检查:不可用");
                 });
         }
-        // this.initVideoClient(this.channel, this.appToken, this.uid);
     }
 
     private joinClient(videoClient: any) {
         videoClient
             .connect(this.urlQuery.channel, this.urlQuery.token, this.urlQuery.user_id)
             .then((token: string, id: number, type: string) => {
-                console.log("connect success");
-                if(this.urlQuery.role == this.UserType.STUDENT || this.urlQuery.role == this.UserType.TEACHER) { 
+                if(!this.roleRank) { 
                     this.$videoClient.publish(this.$videoStream.localStream);
                 }
-
             })
             .catch((req: any) => {
                 console.warn("conect fail" + req);
@@ -105,45 +180,22 @@ export default class Index extends Vue {
         videoClient
             .init(this.appid)
             .then(() => {
-                console.warn("client init success");
-                this.$nextTick(() => {
-                    
-                    if(this.urlQuery.role == this.UserType.STUDENT || this.urlQuery.role == this.UserType.TEACHER) {
-                        // @ts-ignore
-                        this.$refs[`remote`].init(videoClient);
-                    } else {
-                        
-                        for (let index = 0; index < this.v1.usrList.length; index++) {
-                            let ele = this.v1.usrList[index];                           
-                            this.$nextTick(() => {
-                                // @ts-ignore
-                                this.$refs[`remote${ele.user_id}`][0].init(videoClient);
-                            })
-                        }
-                    }
-
-
-
- 
-                    
-                });
                 this.joinClient(videoClient);
             })
             .catch((err: any) => {
-                console.error("初始化本地client" + err);
+                console.error("初始化本地client error" + err);
             });
     }
 
     private init(appid: string = ""): void | boolean {
         this.appid = appid;
-        console.log(this.urlQuery.role);
         
         if (!this.urlQuery.token || !this.urlQuery.channel || !this.urlQuery.role) {
             console.warn("url 缺少参数，无法获取视频流");
             return false;
         }
         if (+this.urlQuery.is ) {
-            if(this.urlQuery.role == this.UserType.PARENT || this.urlQuery.role == this.UserType.ADMIN) {
+            if(this.roleRank) {
                 console.warn('家长/管理员不创建流，直接订阅');
                 this.localVideoComplate();
                 return false;

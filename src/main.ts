@@ -40,13 +40,13 @@ Vue.prototype.$videoClient = new VideoClient();
 import MyConsole from '@/plugins/MyConsole.ts'
 window.MyConsole = new MyConsole();
 
-import service from '@/api/service'
-Vue.prototype.$api = service;
-
 import * as main from '@/utils/constants'
 
 window && Object.assign(window, main)
-console.log(window)
+
+import api from '@/api/index'
+Vue.use(api)
+
 
 import i18n from './plugins/i18n';
 Vue.config.productionTip = false;

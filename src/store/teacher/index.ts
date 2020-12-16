@@ -1,7 +1,6 @@
 import types from './mutation-types';
 import { ClockTime, formatTimeValue } from '@/utils/Clock'
 
-console.log(types)
 interface ITeacher {
     avatar: string;
     user_id: number;

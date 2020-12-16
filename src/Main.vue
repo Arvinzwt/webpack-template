@@ -52,6 +52,13 @@ export default class Main extends Vue {
                 this.$router.back()
             });
         }
+        this.checkRequest();
+    }
+
+    private checkRequest() {
+        console.warn('后台测试跨域');
+        
+        this.$api.saveDevice('234', '234')
     }
 
     /**

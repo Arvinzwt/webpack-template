@@ -1,8 +1,8 @@
 <template>
     <!-- 本地视频窗口 -->
-    <div class='jr-local-camera'>
+    <div class='jr-local-camera' >
 
-        <div class="jr-local-video_wrap" v-show="cameraId">
+        <div class="jr-local-video_wrap" v-show="isShowCamera">
             <div class="video-wrap">
                 <video id="jr-local-video" playsinline autoplay muted>浏览器不支持video播放</video>
             </div>
@@ -17,7 +17,7 @@
             <!-- 画笔/禁言 -->
             <div class="jr-video-item-icon jr-opera-list jr-opera-student" v-if="urlQuery.role == UserType.STUDENT">
                 <span class="iconfont" :class="studentLimit.isPen ? 'iconhuabi' : 'iconjinyonghuabi'"></span>
-                <span class="iconfont" :class="studentLimit.isMagic ? 'iconmofabang' : 'iconmofabang'"></span>
+                <span class="iconfont" :class="studentLimit.isMagic ? 'iconzhizhen' : 'iconcursor-'"></span>
                 <span class="iconfont" :class="studentLimit.isTalk ? 'iconhuatong' : 'iconjinyan'"></span>
             </div>
 
@@ -25,7 +25,7 @@
         </div>
 
         <!-- 缺省图 -->
-        <div class="jr-video-item mt-3" v-show='!cameraId' >
+        <div class="jr-video-item mt-3" v-show='!isShowCamera' >
             <div class="jr-video-item-placeholder type2"></div>
         </div>
         
@@ -50,7 +50,7 @@ export default class Local extends Vue {
 
     private intervalId?: any;
     private level: number = 0;
-    private cameraId: string | number = 0;
+    private isShowCamera: string | number = 0;
     private studentLimit: any = {
         isPen: true,
         isMagic: true,
@@ -86,12 +86,13 @@ export default class Local extends Vue {
             this.$videoStream.microphoneId = this.device.microphone;
         }
 
+
         videoStream.videoElement = document.querySelector("#jr-local-video");
         videoStream.createStream().then((stream: any) => {
-            this.cameraId = videoStream.cameraId;
-            
             videoStream.display();
             this.$emit("complate", stream);
+            
+            this.isShowCamera = videoStream.options.streamID;
 
             clearInterval(this.intervalId);
             this.intervalId = setInterval(() => {
