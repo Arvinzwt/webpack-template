@@ -17,7 +17,7 @@ export default {
          * @param commit[object]
          * @param data 为已在线用户集合（不包括"我"自己）
          */
-        SOCKET_enterSuccess({commit}: any, data: any) {
+        SOCKET_enterSuccess({commit}, data) {
             commit("SOCKET_v1_usrList", data)
             commit("SOCKET_connection", 1)
         },
@@ -28,7 +28,7 @@ export default {
          * @param data[code]错误码
          * @param data[message] 错误原因
          */
-        SOCKET_enterReject({commit}: any, data: any) {
+        SOCKET_enterReject({commit}, data) {
             commit("SOCKET_connection", 2)
         },
 
@@ -37,21 +37,21 @@ export default {
          * @param commit[object]
          * @param data[message] 错误原因
          */
-        SOCKET_offline({commit}: any, data: any) {
+        SOCKET_offline({commit}, data) {
             commit("SOCKET_connection", 3)
         },
 
         /**
          * @desc 用户进入
          */
-        SOCKET_userEnter({commit, state}: any, data: any) {
+        SOCKET_userEnter({commit, state}, data) {
             commit("SOCKET_v1_usrList", state.v1.usrList.concat(data))
         },
 
         /**
          * @desc 用户退出
          */
-        SOCKET_userQuit({commit, state}: any, data: any) {
+        SOCKET_userQuit({commit, state}, data) {
             commit("SOCKET_v1_userQui", data)
         },
 
@@ -60,7 +60,7 @@ export default {
          * @param commit[object]
          * @param digital
          */
-        SOCKET_share({commit}: any, digital: [any, any]) {
+        SOCKET_share({commit}, digital) {
             let [data = {}, usr = {}] = digital
             // 聊天
             if (data['event'] === 'chat') {
@@ -102,36 +102,36 @@ export default {
         /**
          * @desc 存储连接状态
          */
-        SOCKET_connection(state: any, data: number) {
+        SOCKET_connection(state, data) {
             state.v1.connection = data
         },
 
         /**
          * @desc 存储聊天内容
          */
-        SOCKET_v1_chat(state: any, data: object) {
+        SOCKET_v1_chat(state, data) {
             state.v1.chat.push(data)
         },
 
         /**
          * @desc 存储禁言状态
          */
-        SOCKET_v1_mute(state: any, data: boolean) {
+        SOCKET_v1_mute(state, data) {
             state.v1.mute = data
         },
 
         /**
          * @desc 存储用户列表
          */
-        SOCKET_v1_usrList(state: any, data: boolean) {
+        SOCKET_v1_usrList(state, data) {
             state.v1.usrList = data
         },
 
         /**
          * @desc 删除退出用户
          */
-        SOCKET_v1_userQui(state: any, data: any) {
-            state.v1.usrList.forEach((item: any, index: number) => {
+        SOCKET_v1_userQui(state, data) {
+            state.v1.usrList.forEach((item, index) => {
                 if (item.user_id === data.user_id) {
                     state.v1.usrList.splice(index, 1)
                     return false;
@@ -142,24 +142,23 @@ export default {
         /**
          * @desc 存储钻石数据
          */
-        SOCKET_v1_diamond(state: any, data: number) {
+        SOCKET_v1_diamond(state, data) {
             state.v1.diamond = data
         },
 
         /**
          * @desc 计算激励动画
          */
-        SOCKET_v1_heart(state: any, data: number) {
+        SOCKET_v1_heart(state, data) {
             state.v1.heart = data
         },
 
         /**
          * @desc 教师和管理员私聊
          */
-        SOCKET_v1_talk(state: any, data: any) {
+        SOCKET_v1_talk(state, data) {
             state.v1.talk.push(data)
         }
-
     },
     getters: {}
 }
