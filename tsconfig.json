@@ -13,10 +13,6 @@
     "sourceMap": true,
     "baseUrl": ".",
     "types": [
-      "webpack-env",
-      "element-ui",
-      "vue-socket.io",
-      "webpack",
       "webpack-env"
     ],
     "paths": {
