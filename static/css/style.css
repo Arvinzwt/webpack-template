@@ -1,0 +1,222 @@
+body {
+    background: #F8F8F8;
+}
+
+/*页面结构*/
+#app {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    padding-bottom: 34px;
+}
+
+.main {
+    flex: 1;
+    position: relative;
+}
+
+.main .wrap {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    padding: 18px 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/*基础样式*/
+#app {
+    padding-left: 15px;
+    padding-right: 15px;
+    box-sizing: border-box;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #ffffff;
+    height: 148px;
+    margin-bottom: 11px;
+}
+
+.header .logo {
+    display: block;
+    width: 90px;
+    height: 90px;
+    margin-left: 26px;
+}
+
+.header .name {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.header .name h3 {
+    font-weight: 500;
+    font-size: 18px;
+}
+
+.header .name h3.first {
+    margin-bottom: 11px;
+}
+
+.main {
+    background: #FFFFFF;
+}
+
+.main .audio-list {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 50px;
+}
+
+.main .number {
+    font-size: 12px;
+    color: #999999;
+    margin: 0 25px;
+}
+
+.main .name {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+    color: #000000;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.main .opera {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    margin-right: 8px;
+    margin-left: 20px;
+}
+
+.main .opera .play {
+    width: 14px;
+    display: none;
+}
+
+.main .opera .pause {
+    width: 28px;
+    display: block;
+}
+
+.main .opera.active .play {
+    width: 14px;
+    display: block;
+}
+
+.main .opera.active .pause {
+    width: 28px;
+    display: none;
+}
+
+.main .audio-list.active .name {
+    color: #28A5DD;
+}
+
+.footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 8px;
+}
+
+.footer .slide {
+    flex: 1;
+    position: relative;
+    height: 2px;
+    background: #BFBFBF;
+}
+
+.footer .slide .line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+    width: 0;
+    background: #28A5DD;
+}
+
+.footer .slide .bar {
+    position: absolute;
+    left: 0;
+    z-index: 1;
+    display: block;
+    width: 26px;
+    height: 24px;
+    margin-top: -12px;
+    margin-left: -13px;
+}
+
+.footer .opera {
+    width: 28px;
+    margin-left: 20px;
+}
+
+.footer .opera img {
+    width: 100%;
+}
+
+.footer .opera .play {
+    display: none;
+}
+
+.footer .opera .pause {
+    display: block;
+}
+
+
+.footer .opera.active .play {
+    display: block;
+}
+
+.footer .opera.active .pause {
+    display: none;
+}
+
+/*多端处理*/
+
+.opera {
+    cursor: pointer;
+}
+
+@media screen and (min-width: 750px) {
+    .header .name {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: row;
+    }
+
+    .header .name h3 {
+        font-weight: 500;
+        font-size: 18px;
+        margin-right: 20px;
+    }
+
+    .header .name h3.first {
+        margin-bottom: 0;
+    }
+}
+
+@media screen and (min-width: 1140px) {
+    #app {
+        width: 1140px;
+        margin: 0 auto;
+    }
+}
+

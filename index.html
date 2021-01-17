@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title></title>
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover">
+    <link rel="stylesheet" href="./static/css/reset.css">
+    <link rel="stylesheet" href="./static/css/style.css">
+</head>
+<body>
+<div id="app">
+    <div class="header">
+        <img class="logo" src="./static/image/logo.png" alt="精锐-高端辅导">
+        <div class="name">
+            <h3 class="first">2020-2021学年</h3>
+            <h3>上海高三一模听力汇编</h3>
+        </div>
+    </div>
+
+    <div class="main">
+        <div class="wrap">
+            <div class="audio-list" v-for="(item,index) in list" :key="index"
+                 :class="item.number===current.number?'active':''" @click="listPlayAudio(item)">
+
+                <div class="number">{{item.number}}</div>
+                <div class="name">{{item.name}}</div>
+                <div class="opera" :class="(item.number===current.number)&&(current.play)?'active':''">
+                    <img class="play" src="./static/image/rhythm.png" alt="play">
+                    <img class="pause" src="./static/image/pause.png" alt="pause">
+                </div>
+
+                <audio :src="item.path" :id="'audio'+item.number" class="audio">
+                    您的浏览器不支持<code> audio </code>元素
+                </audio>
+
+            </div>
+        </div>
+
+    </div>
+
+    <div class="footer">
+        <div class="slide">
+            <span class="line" :style="{width:current.progress+'%'}"></span>
+            <img class="bar" :style="{left:current.progress+'%'}" src="./static/image/bar.png" alt="bar">
+        </div>
+        <div class="opera" :class="current.play?'active':''" @click="footerPlayAudio">
+            <img class="play" src="./static/image/play.png" alt="play">
+            <img class="pause" src="./static/image/pause.png" alt="pause">
+        </div>
+    </div>
+</div>
+</body>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+<script>
+    new Vue({
+        el: '#app',
+        data: {
+            current: {
+                number: '',
+                play: false,
+                progress: 0,
+            },
+
+            list: [
+                {
+                    number: '01',
+                    name: '2020-2021学年上海嘉定区高三英语一模卷-听力',
+                    path: './static/media/01.mp3',
+                    audio: null,
+                },
+                {
+                    number: '02',
+                    name: '2020-2021学年上海嘉定区高三英语一模卷-听力',
+                    path: './static/media/02.mp3',
+                    audio: null,
+                },
+                {
+                    number: '03',
+                    name: '2020-2021学年上海嘉定区高三英语一模卷-听力',
+                    path: './static/media/03.mp3',
+                    audio: null,
+                }
+                , {
+                    number: '04',
+                    name: '2020-2021学年上海嘉定区高三英语一模卷-听力',
+                    path: './static/media/04.mp3',
+                    audio: null,
+                }
+                , {
+                    number: '05',
+                    name: '2020-2021学年上海嘉定区高三英语一模卷-听力',
+                    path: './static/media/05.mp3',
+                    audio: null,
+                }
+                , {
+                    number: '06',
+                    name: '2020-2021学年上海嘉定区高三英语一模卷-听力',
+                    path: './static/media/06.mp3',
+                    audio: null,
+                }
+                , {
+                    number: '07',
+                    name: '2020-2021学年上海嘉定区高三英语一模卷-听力',
+                    path: './static/media/07.mp3',
+                    audio: null,
+                }
+                , {
+                    number: '08',
+                    name: '2020-2021学年上海嘉定区高三英语一模卷-听力',
+                    path: './static/media/08.mp3',
+                    audio: null,
+                }
+                , {
+                    number: '09',
+                    name: '2020-2021学年上海嘉定区高三英语一模卷-听力',
+                    path: './static/media/09.mp3',
+                    audio: null,
+                }
+                , {
+                    number: '10',
+                    name: '2020-2021学年上海嘉定区高三英语一模卷-听力',
+                    path: './static/media/10.mp3',
+                    audio: null,
+                }
+                , {
+                    number: '11',
+                    name: '2020-2021学年上海嘉定区高三英语一模卷-听力',
+                    path: './static/media/11.mp3',
+                    audio: null,
+                }
+            ],
+        },
+        // computed: {
+        //     progress() {
+        //         let p = 0;
+        //         if (this.current.number) {
+        //             for (var i = 0; i < this.list.length; i++) {
+        //                 if (this.list[i].number === this.current.number) {
+        //
+        //                     // console.log()
+        //                     // console.log(this.list[i].audio.currentTime)
+        //                     // this.list[i].audio.timeupdate
+        //
+        //                     this.list[i].audio.ontimeupdate = function () {
+        //
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //         return p
+        //     }
+        // },
+        mounted() {
+            var that = this;
+            this.$nextTick(function () {
+                for (var i = 0; i < that.list.length; i++) {
+                    that.list[i].audio = document.getElementById('audio' + that.list[i].number);
+                    that.list[i].audio.load();
+                }
+            })
+
+            // media.load();//加载
+            // media.play();//播放
+            // media.pause();//暂停
+            // media.loop = true;//循环播放
+        },
+        methods: {
+            /**
+             * 列表音乐点击
+             */
+            listPlayAudio(item) {
+                if (this.current.number === item.number) {//如果是点的同一个
+                    if (this.current.play) {//如果是在播放，
+                        item.audio.pause();//停止
+                        this.current.play = false;
+                    } else {
+                        item.audio.play();//播放
+                        this.current.play = true;
+                    }
+                } else {
+                    for (var i = 0; i < this.list.length; i++) {
+                        this.list[i].audio.pause();
+                    }
+
+                    item.audio.play();//播放，记录下来
+
+                    this.current.number = item.number;
+                    this.current.play = true;
+                    this.current.progress = 0;
+                }
+
+                this.monitorProgress(item);//监听音乐进度
+            },
+
+            /**
+             * 底部音乐播放
+             */
+            footerPlayAudio() {
+                //如果有当前选中对象
+                if (this.current.number) {
+                    for (var i = 0; i < this.list.length; i++) {
+                        if (this.list[i].number === this.current.number) {
+
+                            if (this.current.play) {//如果是在播放，
+                                this.list[i].audio.pause();//停止
+                                this.current.play = false;
+                            } else {
+                                this.list[i].audio.play();//播放
+                                this.current.play = true;
+                            }
+                        }
+                    }
+                }
+            },
+
+            /**
+             * 监听音乐进度
+             */
+            monitorProgress(item) {
+                var that = this;
+                item.audio.ontimeupdate = function () {
+                    var d = item.audio.duration || 0;
+                    var c = item.audio.currentTime || 0;
+                    that.current.progress = c / d * 100;
+                }
+            },
+
+
+        }
+    })
+
+</script>
+</html>
