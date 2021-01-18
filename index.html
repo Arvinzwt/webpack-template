@@ -132,26 +132,6 @@
                 }
             ],
         },
-        // computed: {
-        //     progress() {
-        //         let p = 0;
-        //         if (this.current.number) {
-        //             for (var i = 0; i < this.list.length; i++) {
-        //                 if (this.list[i].number === this.current.number) {
-        //
-        //                     // console.log()
-        //                     // console.log(this.list[i].audio.currentTime)
-        //                     // this.list[i].audio.timeupdate
-        //
-        //                     this.list[i].audio.ontimeupdate = function () {
-        //
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //         return p
-        //     }
-        // },
         mounted() {
             var that = this;
             this.$nextTick(function () {
@@ -171,46 +151,41 @@
              * 列表音乐点击
              */
             listPlayAudio(item) {
+
                 if (this.current.number === item.number) {//如果是点的同一个
                     if (this.current.play) {//如果是在播放，
                         item.audio.pause();//停止
-                        this.current.play = false;
                     } else {
                         item.audio.play();//播放
-                        this.current.play = true;
                     }
                 } else {
+                    // 全部停下
                     for (var i = 0; i < this.list.length; i++) {
                         this.list[i].audio.pause();
                     }
 
-                    item.audio.play();//播放，记录下来
-
-                    this.current.number = item.number;
-                    this.current.play = true;
-                    this.current.progress = 0;
+                    //播放自己
+                    item.audio.play();
                 }
 
-                this.monitorProgress(item);//监听音乐进度
+                this.current.number = item.number; // 记录id
+                this.monitorAudio(item);//监听
             },
 
             /**
-             * 底部音乐播放
+             * 底部音乐点击
              */
             footerPlayAudio() {
                 //如果有当前选中对象
                 if (this.current.number) {
                     for (var i = 0; i < this.list.length; i++) {
                         if (this.list[i].number === this.current.number) {
-
-                            if (this.current.play) {//如果是在播放，
-                                this.list[i].audio.pause();//停止
-                                this.current.play = false;
-                            } else {
-                                this.list[i].audio.play();//播放
-                                this.current.play = true;
-                            }
+                            this.current.play ? this.list[i].audio.pause() : this.list[i].audio.play();
                         }
+                    }
+                }else {
+                    if(this.list[0]){
+                        this.listPlayAudio(this.list[0])
                     }
                 }
             },
@@ -218,12 +193,24 @@
             /**
              * 监听音乐进度
              */
-            monitorProgress(item) {
+            monitorAudio(item) {
                 var that = this;
+
+                //监听音乐进度
                 item.audio.ontimeupdate = function () {
                     var d = item.audio.duration || 0;
                     var c = item.audio.currentTime || 0;
-                    that.current.progress = c / d * 100;
+                    that.current.progress = c / d * 100 || 0;
+                }
+
+                //监听音乐停止
+                item.audio.onpause = function () {
+                    that.current.play = false;
+                }
+
+                //监听音乐播放
+                item.audio.onplay = function () {
+                    that.current.play = true;
                 }
             },
 
